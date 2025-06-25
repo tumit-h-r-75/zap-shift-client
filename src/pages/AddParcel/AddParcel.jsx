@@ -4,26 +4,18 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const AddParcel = () => {
-  // useForm হুক থেকে প্রয়োজনীয় মেথড ও অবজেক্টগুলো destructure করে নেওয়া
   const {
     register,
     handleSubmit,
     watch,
-    // reset,
     formState: { errors },
   } = useForm();
 
-  // parcel এর টাইপ - Document না Non-document
   const [type, setType] = useState("Document");
-
-  // public folder থেকে fetch করা warehouse data স্টোর করার জন্য
   const [warehouses, setWarehouses] = useState([]);
-
-  // sender এবং receiver এর district স্টেট
   const [senderDistrict, setSenderDistrict] = useState("");
   const [receiverDistrict, setReceiverDistrict] = useState("");
 
-  // component mount হলে warehouses.json থেকে ডেটা লোড করা
   useEffect(() => {
     fetch("/data/warehouses.json")
       .then((res) => res.json())
@@ -31,13 +23,11 @@ const AddParcel = () => {
       .catch((err) => console.error("Failed to load warehouses data:", err));
   }, []);
 
-  // নির্দিষ্ট district অনুযায়ী তার covered_area return করা
   const getCoveredAreasByDistrict = (district) => {
     const found = warehouses.find((w) => w.district === district);
     return found ? found.covered_area : [];
   };
 
-  // form submit হ্যান্ডলার
   const onSubmit = (data) => {
     let cost = 0;
     if (type === "Document") {
@@ -54,20 +44,17 @@ const AddParcel = () => {
       creation_date: new Date().toISOString(),
     };
 
-    console.log(" Saved Parcel:", parcelData);
+    console.log("Saved Parcel:", parcelData);
     toast.success(`Parcel Confirmed! Delivery Cost: ৳${cost}`);
-    // reset();           // ফর্ম রিসেট করা
   };
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      {/* Toast messages দেখানোর জন্য container */}
       <ToastContainer />
 
       <h1 className="text-3xl font-bold text-gray-800 mb-1">Add Parcel</h1>
       <p className="text-gray-600 mb-6">Enter your parcel details</p>
 
-      {/* Parcel Type সিলেক্টর */}
       <div className="flex items-center gap-4 mb-6">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
@@ -91,9 +78,7 @@ const AddParcel = () => {
         </label>
       </div>
 
-      {/* ফর্ম শুরু */}
       <form onSubmit={handleSubmit(onSubmit)} className="grid gap-8">
-        {/* Parcel Info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block font-medium mb-1">Parcel Title</label>
@@ -128,73 +113,72 @@ const AddParcel = () => {
           )}
         </div>
 
-        {/* Sender Details */}
-        <div className="grid gap-6">
-          <h2 className="font-bold text-lg">Sender Details</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid gap-6">
+            <h2 className="font-bold text-lg">Sender Details</h2>
 
-          <input {...register("senderName", { required: "Sender name required" })} className="input input-bordered w-full" placeholder="Name" />
-          {errors.senderName && <p className="text-red-500 text-sm">{errors.senderName.message}</p>}
+            <input {...register("senderName", { required: "Sender name required" })} className="input input-bordered w-full" placeholder="Name" />
+            {errors.senderName && <p className="text-red-500 text-sm">{errors.senderName.message}</p>}
 
-          <input {...register("senderContact", { required: "Sender contact required" })} className="input input-bordered w-full" placeholder="Contact" />
-          {errors.senderContact && <p className="text-red-500 text-sm">{errors.senderContact.message}</p>}
+            <input {...register("senderContact", { required: "Sender contact required" })} className="input input-bordered w-full" placeholder="Contact" />
+            {errors.senderContact && <p className="text-red-500 text-sm">{errors.senderContact.message}</p>}
 
-          <select {...register("senderDistrict", { required: "Select sender district" })} className="select select-bordered w-full" value={senderDistrict} onChange={(e) => setSenderDistrict(e.target.value)}>
-            <option value="">Select District</option>
-            {warehouses.map((w) => (
-              <option key={w.district} value={w.district}>{w.district}</option>
-            ))}
-          </select>
-          {errors.senderDistrict && <p className="text-red-500 text-sm">{errors.senderDistrict.message}</p>}
+            <select {...register("senderDistrict", { required: "Select sender district" })} className="select select-bordered w-full" value={senderDistrict} onChange={(e) => setSenderDistrict(e.target.value)}>
+              <option value="">Select District</option>
+              {warehouses.map((w) => (
+                <option key={w.district} value={w.district}>{w.district}</option>
+              ))}
+            </select>
+            {errors.senderDistrict && <p className="text-red-500 text-sm">{errors.senderDistrict.message}</p>}
 
-          <select {...register("senderArea", { required: "Select sender area" })} className="select select-bordered w-full" disabled={!senderDistrict}>
-            <option value="">{senderDistrict ? "Select Area" : "Select District First"}</option>
-            {getCoveredAreasByDistrict(senderDistrict).map((area) => (
-              <option key={area} value={area}>{area}</option>
-            ))}
-          </select>
-          {errors.senderArea && <p className="text-red-500 text-sm">{errors.senderArea.message}</p>}
+            <select {...register("senderArea", { required: "Select sender area" })} className="select select-bordered w-full" disabled={!senderDistrict}>
+              <option value="">{senderDistrict ? "Select Area" : "Select District First"}</option>
+              {getCoveredAreasByDistrict(senderDistrict).map((area) => (
+                <option key={area} value={area}>{area}</option>
+              ))}
+            </select>
+            {errors.senderArea && <p className="text-red-500 text-sm">{errors.senderArea.message}</p>}
 
-          <input {...register("senderAddress", { required: "Sender address required" })} className="input input-bordered w-full" placeholder="Full Address" />
-          {errors.senderAddress && <p className="text-red-500 text-sm">{errors.senderAddress.message}</p>}
+            <input {...register("senderAddress", { required: "Sender address required" })} className="input input-bordered w-full" placeholder="Full Address" />
+            {errors.senderAddress && <p className="text-red-500 text-sm">{errors.senderAddress.message}</p>}
 
-          <textarea {...register("pickupInstruction", { required: "Pickup instruction required" })} className="textarea textarea-bordered w-full" placeholder="Pickup Instruction" />
-          {errors.pickupInstruction && <p className="text-red-500 text-sm">{errors.pickupInstruction.message}</p>}
+            <textarea {...register("pickupInstruction", { required: "Pickup instruction required" })} className="textarea textarea-bordered w-full" placeholder="Pickup Instruction" />
+            {errors.pickupInstruction && <p className="text-red-500 text-sm">{errors.pickupInstruction.message}</p>}
+          </div>
+
+          <div className="grid gap-6">
+            <h2 className="font-bold text-lg">Receiver Details</h2>
+
+            <input {...register("receiverName", { required: "Receiver name required" })} className="input input-bordered w-full" placeholder="Name" />
+            {errors.receiverName && <p className="text-red-500 text-sm">{errors.receiverName.message}</p>}
+
+            <input {...register("receiverContact", { required: "Receiver contact required" })} className="input input-bordered w-full" placeholder="Contact" />
+            {errors.receiverContact && <p className="text-red-500 text-sm">{errors.receiverContact.message}</p>}
+
+            <select {...register("receiverDistrict", { required: "Select receiver district" })} className="select select-bordered w-full" value={receiverDistrict} onChange={(e) => setReceiverDistrict(e.target.value)}>
+              <option value="">Select District</option>
+              {warehouses.map((w) => (
+                <option key={w.district} value={w.district}>{w.district}</option>
+              ))}
+            </select>
+            {errors.receiverDistrict && <p className="text-red-500 text-sm">{errors.receiverDistrict.message}</p>}
+
+            <select {...register("receiverArea", { required: "Select receiver area" })} className="select select-bordered w-full" disabled={!receiverDistrict}>
+              <option value="">{receiverDistrict ? "Select Area" : "Select District First"}</option>
+              {getCoveredAreasByDistrict(receiverDistrict).map((area) => (
+                <option key={area} value={area}>{area}</option>
+              ))}
+            </select>
+            {errors.receiverArea && <p className="text-red-500 text-sm">{errors.receiverArea.message}</p>}
+
+            <input {...register("receiverAddress", { required: "Receiver address required" })} className="input input-bordered w-full" placeholder="Full Address" />
+            {errors.receiverAddress && <p className="text-red-500 text-sm">{errors.receiverAddress.message}</p>}
+
+            <textarea {...register("deliveryInstruction", { required: "Delivery instruction required" })} className="textarea textarea-bordered w-full" placeholder="Delivery Instruction" />
+            {errors.deliveryInstruction && <p className="text-red-500 text-sm">{errors.deliveryInstruction.message}</p>}
+          </div>
         </div>
 
-        {/* Receiver Details */}
-        <div className="grid gap-6">
-          <h2 className="font-bold text-lg">Receiver Details</h2>
-
-          <input {...register("receiverName", { required: "Receiver name required" })} className="input input-bordered w-full" placeholder="Name" />
-          {errors.receiverName && <p className="text-red-500 text-sm">{errors.receiverName.message}</p>}
-
-          <input {...register("receiverContact", { required: "Receiver contact required" })} className="input input-bordered w-full" placeholder="Contact" />
-          {errors.receiverContact && <p className="text-red-500 text-sm">{errors.receiverContact.message}</p>}
-
-          <select {...register("receiverDistrict", { required: "Select receiver district" })} className="select select-bordered w-full" value={receiverDistrict} onChange={(e) => setReceiverDistrict(e.target.value)}>
-            <option value="">Select District</option>
-            {warehouses.map((w) => (
-              <option key={w.district} value={w.district}>{w.district}</option>
-            ))}
-          </select>
-          {errors.receiverDistrict && <p className="text-red-500 text-sm">{errors.receiverDistrict.message}</p>}
-
-          <select {...register("receiverArea", { required: "Select receiver area" })} className="select select-bordered w-full" disabled={!receiverDistrict}>
-            <option value="">{receiverDistrict ? "Select Area" : "Select District First"}</option>
-            {getCoveredAreasByDistrict(receiverDistrict).map((area) => (
-              <option key={area} value={area}>{area}</option>
-            ))}
-          </select>
-          {errors.receiverArea && <p className="text-red-500 text-sm">{errors.receiverArea.message}</p>}
-
-          <input {...register("receiverAddress", { required: "Receiver address required" })} className="input input-bordered w-full" placeholder="Full Address" />
-          {errors.receiverAddress && <p className="text-red-500 text-sm">{errors.receiverAddress.message}</p>}
-
-          <textarea {...register("deliveryInstruction", { required: "Delivery instruction required" })} className="textarea textarea-bordered w-full" placeholder="Delivery Instruction" />
-          {errors.deliveryInstruction && <p className="text-red-500 text-sm">{errors.deliveryInstruction.message}</p>}
-        </div>
-
-        {/* Submit Button */}
         <p className="text-sm text-gray-600 mt-4">* PickUp Time: 4pm–7pm Approx.</p>
 
         <button type="submit" className="btn bg-lime-500 hover:bg-lime-600 text-white w-32 mt-4">Continue</button>
