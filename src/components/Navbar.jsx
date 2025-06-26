@@ -16,6 +16,7 @@ const Navbar = () => {
     { path: "/aboutus", label: "About Us" },
     { path: "/pricing", label: "Pricing" },
     { path: "/be-a-rider", label: "Be a Rider" },
+    { path: "/dashboard", label: "Dashboard",requiresAuth: true },
   ];
 
   const handleLogout = async () => {
@@ -31,7 +32,9 @@ const Navbar = () => {
 
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-6">
-          {navLinks.map((link) => (
+          {navLinks
+          .filter((link) => !link.requiresAuth || user) //filter by login
+          .map((link) => (
             <NavLink
               key={link.path}
               to={link.path}
@@ -97,7 +100,9 @@ const Navbar = () => {
         {/* Mobile Menu */}
         {isOpen && (
           <div className="absolute top-16 left-4 right-4 bg-white shadow-lg rounded-xl z-50 p-4 md:hidden flex flex-col gap-3">
-            {navLinks.map((link) => (
+            {navLinks
+            .filter((link) => !link.requiresAuth || user) //filter by login
+            .map((link) => (
               <NavLink
                 key={link.path}
                 to={link.path}
