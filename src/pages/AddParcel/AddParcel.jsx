@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import "react-toastify/dist/ReactToastify.css";
 import useAuth from "../../hooks/useAuth";
+import axios from "axios";
 
 const AddParcel = () => {
     const {
@@ -87,8 +88,15 @@ const AddParcel = () => {
             reverseButtons: true,
         }).then((result) => {
             if (result.isConfirmed) {
-                console.log(" Saved Parcel:", parcelData);
-                Swal.fire("Confirmed!", "Your parcel is saved and ready for payment.", "success");
+                axios.post('http://localhost:5000/parcels', parcelData)
+                    .then(res => {
+                        console.log("Parcel Saved:", res.data);
+                        Swal.fire("Confirmed!", "Your parcel is saved and ready for payment.", "success");
+                    })
+                    .catch(error => {
+                        console.error(" Error saving parcel:", error);
+                        Swal.fire("Error!", "Something went wrong.", "error");
+                    });
             } else {
                 Swal.fire("Editing Mode", "You can now modify the parcel info.", "info");
             }
