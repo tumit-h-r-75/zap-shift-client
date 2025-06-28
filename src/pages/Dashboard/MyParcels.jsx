@@ -2,12 +2,13 @@ import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecoure from '../../hooks/useAxiosSecoure';
-import { Link } from 'react-router'; 
+import { Link, useNavigate } from 'react-router'; 
 import Swal from 'sweetalert2'; 
 
 const MyParcels = () => {
     const { user } = useAuth();
     const axiosSecoure = useAxiosSecoure();
+    const navigate = useNavigate();
 
     const { data: parcels = [], refetch } = useQuery({
         queryKey: ['my-parcels', user?.email],
@@ -48,6 +49,11 @@ const MyParcels = () => {
             year: 'numeric'
         });
     };
+
+    // for payment 
+    const handlePay = (id) => {
+    navigate(`/dashboard/payment/${id}`);
+};
 
     return (
         <div className="p-4">
@@ -96,7 +102,7 @@ const MyParcels = () => {
                                     </Link>
                                     <button
                                         className="px-3 py-1 bg-purple-600 text-white rounded"
-                                        onClick={() => alert("Payment functionality coming soon")}
+                                        onClick={() => handlePay(parcel._id)}
                                         disabled={parcel.Payment_status === "paid"}
                                     >
                                         Pay

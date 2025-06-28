@@ -9,6 +9,7 @@ import AddParcel from "../pages/AddParcel/AddParcel";
 import PrivateRoute from "../context/PrivateRoute";
 import DashboardLayout from "../layouts/DashboardLayout";
 import MyParcels from "../pages/Dashboard/MyParcels";
+import Payment from "../pages/Dashboard/Payment/Payment";
 
 
 
@@ -43,6 +44,7 @@ export const router = createBrowserRouter([
         </PrivateRoute>,
         children: [
             { path: "myParcels", Component: MyParcels },
+            {path:'payment/:id',Component:Payment}
         ]
     }
 ]);
