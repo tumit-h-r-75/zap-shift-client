@@ -1,16 +1,20 @@
 import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { useQuery } from '@tanstack/react-query';
-import React, { useState } from 'react';
-import { useParams } from 'react-router';
+import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router';
 import useAxiosSecoure from '../../../hooks/useAxiosSecoure';
 import Loader from '../../../components/Loader';
+import useAuth from '../../../hooks/useAuth';
+import Swal from 'sweetalert2';
 
 const CheckoutForm = () => {
 
     const stripe = useStripe();
     const elements = useElements();
     const { id } = useParams();
-    const axiosSecoure = useAxiosSecoure()
+    const { user } = useAuth();
+    const axiosSecoure = useAxiosSecoure();
+    const navigate = useNavigate();
 
     const [error, setError] = useState('');
 
@@ -42,7 +46,7 @@ const CheckoutForm = () => {
         if (!card) {
             return
         }
-
+        // vaslidate the card
         const { error, paymentMethod } = await stripe.createPaymentMethod({
             type: 'card',
             card
@@ -54,32 +58,54 @@ const CheckoutForm = () => {
         else {
             setError('')
             console.log('paymentMathod', paymentMethod);
-        }
+            // create payment intent
+            const res = await axiosSecoure.post('/create-payment-intent', {
+                amount: parseInt(parcelInfo.cost),
+                id
+            })
 
-        // create payment intent
-        const res = await axiosSecoure.post('/create-payment-intent', {
-            amount,
-            id
-        })
+            const clientSecret = res.data.clientSecret;
 
-        const clientSecret = res.data.clientSecret;
-
-        const result = await stripe.confirmCardPayment(clientSecret, {
-            payment_method: {
-                card: elements.getElement(CardElement),
-                billing_details: {
-                    name: parcelInfo?.receiver_name || 'Anonymous User',
-                    email: parcelInfo?.created_by,
+            // confrem payment
+            const result = await stripe.confirmCardPayment(clientSecret, {
+                payment_method: {
+                    card: elements.getElement(CardElement),
+                    billing_details: {
+                        name: user?.displayName,
+                        email: user?.email,
+                    },
                 },
-            },
-        });
+            });
 
-        if (result.error) {
-            setError(result.error.message);
-        } else if (result.paymentIntent.status === "succeeded") {
-            setError('');
-            console.log(" Payment successful:", result.paymentIntent);
-            console.log(result);
+            if (result.error) {
+                setError(result.error.message);
+
+            } else if (result.paymentIntent.status === "succeeded") {
+                setError('');
+                console.log(" Payment successful:", result.paymentIntent);
+
+                const paymentData = {
+                    transactionId: result.paymentIntent.id,
+                    amount: amount,
+                    email: user?.email,
+                    parcelId: parcelInfo?._id,
+                    date: new Date(),
+                };
+
+                const saveRes = await axiosSecoure.post("/save-payment", paymentData);
+
+                if (saveRes.data?.paymentResult?.insertedId) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Payment Successful!',
+                        html: `<b>Transaction ID:</b> ${result.paymentIntent.id}`,
+                        confirmButtonText: 'Go to My Parcels',
+                        confirmButtonColor: '#22c55e',
+                    }).then(() => {
+                        navigate('/dashboard/myParcels');
+                    });
+                }
+            }
         }
 
 

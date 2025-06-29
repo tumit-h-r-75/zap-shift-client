@@ -2,8 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecoure from '../../hooks/useAxiosSecoure';
-import { Link, useNavigate } from 'react-router'; 
-import Swal from 'sweetalert2'; 
+import { Link, useNavigate } from 'react-router';
+import Swal from 'sweetalert2';
 
 const MyParcels = () => {
     const { user } = useAuth();
@@ -52,8 +52,8 @@ const MyParcels = () => {
 
     // for payment 
     const handlePay = (id) => {
-    navigate(`/dashboard/payment/${id}`);
-};
+        navigate(`/dashboard/payment/${id}`);
+    };
 
     return (
         <div className="p-4">
@@ -79,8 +79,8 @@ const MyParcels = () => {
                                 <td>{index + 1}</td>
                                 <td>
                                     <span className={`px-2 py-1 text-xs font-semibold rounded-full ${parcel.type === "Document"
-                                            ? "bg-green-100 text-green-700"
-                                            : "bg-yellow-100 text-yellow-800"}`}>
+                                        ? "bg-green-100 text-green-700"
+                                        : "bg-yellow-100 text-yellow-800"}`}>
                                         {parcel.type}
                                     </span>
                                 </td>
@@ -88,8 +88,8 @@ const MyParcels = () => {
                                 <td>৳{parcel.cost}</td>
                                 <td>
                                     <span className={`px-2 py-1 text-sm font-medium rounded ${parcel.Payment_status === "paid"
-                                            ? "bg-green-500 text-white"
-                                            : "bg-red-500 text-white"}`}>
+                                        ? "bg-green-500 text-white"
+                                        : "bg-red-500 text-white"}`}>
                                         {parcel.Payment_status}
                                     </span>
                                 </td>
@@ -100,13 +100,18 @@ const MyParcels = () => {
                                     >
                                         View
                                     </Link>
-                                    <button
-                                        className="px-3 py-1 bg-purple-600 text-white rounded"
-                                        onClick={() => handlePay(parcel._id)}
-                                        disabled={parcel.Payment_status === "paid"}
-                                    >
-                                        Pay
-                                    </button>
+
+                                    {
+                                        parcel.Payment_status !== "paid" && (
+                                            <button
+                                                className="px-3 py-1 bg-purple-600 text-white rounded"
+                                                onClick={() => handlePay(parcel._id)}
+                                            >
+                                                Pay
+                                            </button>
+                                        )
+                                    }
+
                                     <button
                                         className="px-3 py-1 bg-red-600 text-white rounded"
                                         onClick={() => handleDelete(parcel._id)}
@@ -114,6 +119,7 @@ const MyParcels = () => {
                                         Delete
                                     </button>
                                 </td>
+
                             </tr>
                         ))}
                     </tbody>

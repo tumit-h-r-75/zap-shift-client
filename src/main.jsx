@@ -16,6 +16,7 @@ const queryClient = new QueryClient();
 
 Aos.init();
 
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
