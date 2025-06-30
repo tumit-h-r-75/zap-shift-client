@@ -1,12 +1,12 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
-import { FcGoogle } from 'react-icons/fc';
 import useAuth from '../../hooks/useAuth';
+import SocialLogin from '../../components/SocialLogin/SocialLogin';
 
 const Login = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
-  const {sigInUser,googleSigneIn} = useAuth();
+  const {sigInUser} = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
     const from = location.state?.from?.pathname || "/";
@@ -23,15 +23,7 @@ const Login = () => {
     })
   };
 
-  const handleGoogleLogin = () => {
-        googleSigneIn()
-            .then(() => {
-                navigate(from, { replace: true });
-            })
-            .catch((error) => {
-                console.log(error);
-            });
-    };
+
 
   return (
     <div className="space-y-6">
@@ -72,9 +64,9 @@ const Login = () => {
 
       <div className="divider text-gray-500">or</div>
 
-      <button onClick={handleGoogleLogin} className="btn btn-outline w-full flex items-center justify-center gap-2">
-        <FcGoogle className="text-xl" /> Login with Google
-      </button>
+      <div>
+        <SocialLogin></SocialLogin>
+      </div>
     </div>
   );
 };
