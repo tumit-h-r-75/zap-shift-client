@@ -12,6 +12,8 @@ import {
     FaHistory,
     FaComments,
     FaCog,
+    FaBiking,
+    FaUserClock
 } from 'react-icons/fa';
 import ProfirstLogo from '../components/ProfirstLogo';
 import useAuth from '../hooks/useAuth';
@@ -23,7 +25,6 @@ const DashboardLayout = () => {
         signOutUser();
     };
 
-    // ✅ Common class for active/inactive NavLink
     const navLinkClass = ({ isActive }) =>
         isActive
             ? 'flex items-center gap-2 px-3 py-2 rounded bg-lime-400 text-white font-medium'
@@ -77,6 +78,10 @@ const DashboardLayout = () => {
                     <li><NavLink to='/dashboard/manageParcels' className={navLinkClass}><FaBox /> Manage Parcels</NavLink></li>
                     <li><NavLink to='/dashboard/paymentHistory' className={navLinkClass}><FaHistory /> Payment History</NavLink></li>
                     <li><NavLink to='/dashboard/settings' className={navLinkClass}><FaCog /> User Settings</NavLink></li>
+
+                    {/* ✅ New Added Links */}
+                    <li><NavLink to='/dashboard/activeRiders' className={navLinkClass}><FaBiking /> Active Riders</NavLink></li>
+                    <li><NavLink to='/dashboard/pendingRiders' className={navLinkClass}><FaUserClock /> Pending Riders</NavLink></li>
 
                     <li>
                         <button onClick={handleLogout} className="btn btn-sm bg-red-500 text-white mt-3 w-full flex items-center gap-2 justify-center">
