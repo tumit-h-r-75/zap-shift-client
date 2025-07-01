@@ -13,6 +13,8 @@ import Payment from "../pages/Dashboard/Payment/Payment";
 import PaymentHistory from "../pages/Dashboard/PaymentHistory/PaymentHistory";
 import Tracking from "../pages/Dashboard/Tracking/Tracking";
 import BeARider from "../pages/BeARider/BeaRider";
+import ActiveRiders from "../pages/BeARider/ActiveRiders";
+import PendingRiders from "../pages/BeARider/PendingRiders";
 
 
 
@@ -56,6 +58,8 @@ export const router = createBrowserRouter([
             { path: 'payment/:id', Component: Payment },
             { path: 'paymentHistory', Component: PaymentHistory },
             { path: 'tracking', Component: Tracking },
+            { path: 'activeRiders', Component: ActiveRiders },
+            { path: 'pendingRiders', Component: PendingRiders }
 
         ]
     }

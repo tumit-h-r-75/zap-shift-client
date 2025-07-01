@@ -79,7 +79,7 @@ const DashboardLayout = () => {
                     <li><NavLink to='/dashboard/paymentHistory' className={navLinkClass}><FaHistory /> Payment History</NavLink></li>
                     <li><NavLink to='/dashboard/settings' className={navLinkClass}><FaCog /> User Settings</NavLink></li>
 
-                    {/* ✅ New Added Links */}
+                    {/*New Added Links */}
                     <li><NavLink to='/dashboard/activeRiders' className={navLinkClass}><FaBiking /> Active Riders</NavLink></li>
                     <li><NavLink to='/dashboard/pendingRiders' className={navLinkClass}><FaUserClock /> Pending Riders</NavLink></li>
 

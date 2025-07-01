@@ -68,7 +68,7 @@ const BeARider = () => {
             })
 
 
-        // reset();
+        reset();
     };
 
     return (
