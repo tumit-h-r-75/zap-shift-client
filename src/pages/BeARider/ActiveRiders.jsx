@@ -1,12 +1,15 @@
 import React from 'react';
 import useAxiosSecoure from '../../hooks/useAxiosSecoure';
-import { useQuery } from '@tanstack/react-query';
-import Loader from '../../components/Loader'; // Optional: use if you want to show a loader
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import Loader from '../../components/Loader';
+import Swal from 'sweetalert2';
+import { FaBan, FaUserCheck } from 'react-icons/fa';
 
 const ActiveRiders = () => {
   const axiosSecure = useAxiosSecoure();
+  const queryClient = useQueryClient();
 
-  // ✅ Fetching active riders using TanStack Query
+  //  Load Active Riders
   const { data: riders = [], isLoading } = useQuery({
     queryKey: ['activeRiders'],
     queryFn: async () => {
@@ -15,12 +18,40 @@ const ActiveRiders = () => {
     }
   });
 
+  // Deactivate Rider (status → 'pending')
+  const deactivateMutation = useMutation({
+    mutationFn: async (id) => {
+      const res = await axiosSecure.patch(`/riders/deactivate/${id}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      Swal.fire('Deactivated!', 'Rider moved to pending list.', 'success');
+      queryClient.invalidateQueries(['activeRiders']);
+      queryClient.invalidateQueries(['pendingRiders']); // if you're showing pending list too
+    }
+  });
+
+  const handleDeactivate = (id) => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'Do you want to deactivate this rider?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, deactivate!',
+      confirmButtonColor: '#f59e0b',
+    }).then(result => {
+      if (result.isConfirmed) {
+        deactivateMutation.mutate(id);
+      }
+    });
+  };
+
   return (
     <div className="p-4">
       <h2 className="text-2xl font-semibold mb-4">Active Riders</h2>
 
       {isLoading ? (
-        <Loader /> // Optional loading spinner
+        <Loader />
       ) : (
         <div className="overflow-x-auto">
           <table className="table w-full border">
@@ -32,12 +63,14 @@ const ActiveRiders = () => {
                 <th>Phone</th>
                 <th>Region</th>
                 <th>Bike</th>
+                <th>Status</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
               {riders.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="text-center py-4 text-gray-500">
+                  <td colSpan="8" className="text-center py-4 text-gray-500">
                     No active riders found.
                   </td>
                 </tr>
@@ -50,6 +83,25 @@ const ActiveRiders = () => {
                     <td>{rider.phone}</td>
                     <td>{rider.region}</td>
                     <td>{rider.bikeBrand} ({rider.bikeNumber})</td>
+
+                    {/* Status Badge */}
+                    <td>
+                      <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
+                        <FaUserCheck className="text-green-500" />
+                        Active
+                      </span>
+                    </td>
+
+                    {/*  Only Deactivate Button */}
+                    <td>
+                      <button
+                        className="btn btn-sm btn-warning tooltip"
+                        data-tip="Deactivate"
+                        onClick={() => handleDeactivate(rider._id)}
+                      >
+                        <FaBan className="mr-1" /> Deactivate
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}
