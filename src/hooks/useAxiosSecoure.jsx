@@ -3,7 +3,7 @@ import React from 'react';
 import useAuth from './useAuth';
 
 const axiosSecoure = axios.create({
-    baseURL: `http://localhost:5000`
+    baseURL: `https://zap-shift-server-three.vercel.app`
 })
 
 const useAxiosSecoure = () => {
