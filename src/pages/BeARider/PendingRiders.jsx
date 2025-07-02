@@ -21,11 +21,24 @@ const PendingRiders = () => {
 
     // Approve rider
     const handleApprove = async (id) => {
-        const res = await axiosSecure.patch(`/riders/approve/${id}`);
-        if (res.data.modifiedCount > 0) {
-            refetch();
-        }
-    };
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: 'Do you want to approve this rider application?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#16a34a', // green
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Yes, approve it!',
+  });
+
+  if (result.isConfirmed) {
+    const res = await axiosSecure.patch(`/riders/approve/${id}`);
+    if (res.data.modifiedCount > 0) {
+      Swal.fire('Approved!', 'Rider has been approved.', 'success');
+      refetch();
+    }
+  }
+};
 
     // Cancel rider
     const handleCancel = async (id) => {
