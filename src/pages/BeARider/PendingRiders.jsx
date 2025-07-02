@@ -3,6 +3,7 @@ import useAxiosSecoure from '../../hooks/useAxiosSecoure';
 import { useQuery } from '@tanstack/react-query';
 import { FaCheck, FaTimes, FaEye } from 'react-icons/fa';
 import Loader from '../../components/Loader';
+import Swal from 'sweetalert2';
 
 const PendingRiders = () => {
     const axiosSecure = useAxiosSecoure();
@@ -22,15 +23,28 @@ const PendingRiders = () => {
     const handleApprove = async (id) => {
         const res = await axiosSecure.patch(`/riders/approve/${id}`);
         if (res.data.modifiedCount > 0) {
-            refetch(); 
+            refetch();
         }
     };
 
     // Cancel rider
     const handleCancel = async (id) => {
-        const res = await axiosSecure.delete(`/riders/${id}`);
-        if (res.data.deletedCount > 0) {
-            refetch(); 
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this rider deletion!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        });
+
+        if (result.isConfirmed) {
+            const res = await axiosSecure.delete(`/riders/${id}`);
+            if (res.data.deletedCount > 0) {
+                Swal.fire('Deleted!', 'Rider has been deleted.', 'success');
+                refetch();
+            }
         }
     };
 
