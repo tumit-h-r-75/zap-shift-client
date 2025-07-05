@@ -82,6 +82,7 @@ const DashboardLayout = () => {
                     {/*New Added Links */}
                     <li><NavLink to='/dashboard/activeRiders' className={navLinkClass}><FaBiking /> Active Riders</NavLink></li>
                     <li><NavLink to='/dashboard/pendingRiders' className={navLinkClass}><FaUserClock /> Pending Riders</NavLink></li>
+                    <li><NavLink to='/dashboard/makeAdmin' className={navLinkClass}> <FaUser /> Make Admin </NavLink> </li>
 
                     <li>
                         <button onClick={handleLogout} className="btn btn-sm bg-red-500 text-white mt-3 w-full flex items-center gap-2 justify-center">

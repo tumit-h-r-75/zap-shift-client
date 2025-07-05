@@ -15,6 +15,7 @@ import Tracking from "../pages/Dashboard/Tracking/Tracking";
 import BeARider from "../pages/BeARider/BeaRider";
 import ActiveRiders from "../pages/BeARider/ActiveRiders";
 import PendingRiders from "../pages/BeARider/PendingRiders";
+import MakeAdmin from "../pages/Dashboard/MakeAdmin/MakeAdmin";
 
 
 
@@ -59,7 +60,8 @@ export const router = createBrowserRouter([
             { path: 'paymentHistory', Component: PaymentHistory },
             { path: 'tracking', Component: Tracking },
             { path: 'activeRiders', Component: ActiveRiders },
-            { path: 'pendingRiders', Component: PendingRiders }
+            { path: 'pendingRiders', Component: PendingRiders },
+            { path: 'makeAdmin', Component: MakeAdmin },
 
         ]
     }
