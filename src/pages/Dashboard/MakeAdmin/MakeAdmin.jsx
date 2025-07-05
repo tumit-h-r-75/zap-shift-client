@@ -1,66 +1,82 @@
-// src/pages/Dashboard/MakeAdmin.jsx
 import { useState } from 'react';
-import { toast } from 'react-hot-toast';
-import { FaSearch, FaUserShield, FaUserSlash } from 'react-icons/fa';
 import useAxiosSecoure from '../../../hooks/useAxiosSecoure';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import Swal from 'sweetalert2';
+import {
+    FaUserShield,
+    FaUserSlash,
+    FaSearch,
+    FaUserCheck,
+    FaUser
+} from 'react-icons/fa';
 
 const MakeAdmin = () => {
     const axiosSecure = useAxiosSecoure();
+    const queryClient = useQueryClient();
+
     const [email, setEmail] = useState('');
     const [user, setUser] = useState(null);
 
     // 🔍 Search user by email
-    const handleSearch = () => {
-        if (!email.trim()) {
-            toast.error('Please enter an email');
-            return;
+    const handleSearch = async () => {
+        if (!email) return;
+
+        try {
+            const res = await axiosSecure.get(`/user/search?email=${email}`);
+            setUser(res.data);
+        } catch (err) {
+            console.error("User not found", err);
+            setUser(null);
         }
-
-        axiosSecure.get(`/user/search?email=${email}`)
-            .then(res => {
-                if (res.data) {
-                    setUser(res.data);
-                    toast.success('User found');
-                } else {
-                    setUser(null);
-                    toast.error('User not found');
-                }
-            });
     };
 
-    // ✅ Make admin
-    const handleMakeAdmin = () => {
-        axiosSecure.patch('/user/make-admin', { email: user.email })
-            .then(res => {
-                if (res.data.modifiedCount > 0) {
-                    toast.success(`${user.email} is now an Admin`);
-                    setUser({ ...user, role: 'admin' });
-                }
-            });
-    };
+    // Role update mutation
+    const { mutate: updateRole, isPending } = useMutation({
+        mutationFn: async ({ email, role }) => {
+            const res = await axiosSecure.patch('/user/update-role', { email, role });
+            return res.data;
+        },
+        onSuccess: () => {
+            Swal.fire(' Success', 'Role updated successfully!', 'success');
+            setUser(null);
+            setEmail('');
+            queryClient.invalidateQueries(['users']);
+        },
+        onError: () => {
+            Swal.fire(' Error', 'Failed to update role!', 'error');
+        }
+    });
 
-    // ❌ Remove admin
-    const handleRemoveAdmin = () => {
-        axiosSecure.patch('/user/remove-admin', { email: user.email })
-            .then(res => {
-                if (res.data.modifiedCount > 0) {
-                    toast.success(`${user.email} is no longer an Admin`);
-                    setUser({ ...user, role: 'user' });
-                }
-            });
+    //  Confirm role change
+    const handleChangeRole = (newRole) => {
+        if (!user?.email) return;
+
+        Swal.fire({
+            title: `Are you sure?`,
+            text: `Do you want to change role to ${newRole}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Change it!',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                updateRole({ email: user.email, role: newRole });
+            }
+        });
     };
 
     return (
-        <div className="p-6 max-w-xl mx-auto">
-            <h2 className="text-2xl font-bold mb-4">🔍 Search User to Manage Admin Role</h2>
+        <div className="max-w-xl mx-auto bg-white p-6 rounded shadow">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <FaUserCheck className="text-blue-600" /> Make Admin
+            </h2>
 
             <div className="flex gap-2 mb-4">
                 <input
                     type="text"
+                    placeholder="Search user by email"
+                    className="input input-bordered w-full"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter email"
-                    className="input input-bordered w-full"
                 />
                 <button onClick={handleSearch} className="btn btn-primary flex items-center gap-2">
                     <FaSearch /> Search
@@ -68,26 +84,44 @@ const MakeAdmin = () => {
             </div>
 
             {user && (
-                <div className="bg-white p-4 shadow rounded-lg border space-y-2">
+                <div className="bg-gray-100 p-4 rounded shadow space-y-2">
+                    <p><strong>Name:</strong> {user.name || 'N/A'}</p>
                     <p><strong>Email:</strong> {user.email}</p>
-                    <p><strong>Role:</strong> {user.role || 'user'}</p>
-                    <p><strong>Joined:</strong> {new Date(user.createdAt).toLocaleDateString()}</p>
+                    <p className="flex items-center gap-1">
+                        <strong>Current Role:</strong>
+                        {user.role === 'admin' ? (
+                            <span className="text-green-600 font-semibold flex items-center gap-1">
+                                <FaUserShield /> Admin
+                            </span>
+                        ) : (
+                            <span className="text-gray-700 font-semibold flex items-center gap-1">
+                                <FaUser /> User
+                            </span>
+                        )}
+                    </p>
 
-                    {user.role !== 'admin' ? (
-                        <button
-                            onClick={handleMakeAdmin}
-                            className="btn btn-success mt-2 flex items-center gap-2"
-                        >
-                            <FaUserShield /> Make Admin
-                        </button>
-                    ) : (
-                        <button
-                            onClick={handleRemoveAdmin}
-                            className="btn btn-warning mt-2 flex items-center gap-2"
-                        >
-                            <FaUserSlash /> Remove Admin
-                        </button>
-                    )}
+                    <div className="flex flex-wrap gap-2 mt-3">
+                        {user.role !== 'admin' && (
+                            <button
+                                className="btn btn-success flex items-center gap-2"
+                                onClick={() => handleChangeRole('admin')}
+                                disabled={isPending}
+                            >
+                                <FaUserShield />
+                                {isPending ? 'Promoting...' : 'Make Admin'}
+                            </button>
+                        )}
+                        {user.role === 'admin' && (
+                            <button
+                                className="btn btn-warning flex items-center gap-2"
+                                onClick={() => handleChangeRole('user')}
+                                disabled={isPending}
+                            >
+                                <FaUserSlash />
+                                {isPending ? 'Demoting...' : 'Remove Admin'}
+                            </button>
+                        )}
+                    </div>
                 </div>
             )}
         </div>
