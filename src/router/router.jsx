@@ -18,6 +18,7 @@ import PendingRiders from "../pages/BeARider/PendingRiders";
 import MakeAdmin from "../pages/Dashboard/MakeAdmin/MakeAdmin";
 import Forbiden from "../pages/Forbidden/Forbiden";
 import AdminRoute from "../context/AdminRoute";
+import AssignRider from "../pages/Dashboard/AssignRider/AssignRider";
 
 
 export const router = createBrowserRouter([
@@ -64,6 +65,7 @@ export const router = createBrowserRouter([
             { path: 'payment/:id', Component: Payment },
             { path: 'paymentHistory', Component: PaymentHistory },
             { path: 'tracking', Component: Tracking },
+            { path: 'assign-rider', element:<AdminRoute><AssignRider></AssignRider></AdminRoute> },
             { path: 'activeRiders', element: <AdminRoute><ActiveRiders></ActiveRiders></AdminRoute> },
             { path: 'pendingRiders', element: <AdminRoute><PendingRiders></PendingRiders></AdminRoute> },
             { path: 'makeAdmin', element: <AdminRoute><MakeAdmin></MakeAdmin></AdminRoute> },

@@ -10,7 +10,8 @@ import {
     FaHistory,
     FaCog,
     FaBiking,
-    FaUserClock
+    FaUserClock,
+    FaUserPlus
 } from 'react-icons/fa';
 import ProfirstLogo from '../components/ProfirstLogo';
 import useAuth from '../hooks/useAuth';
@@ -75,6 +76,7 @@ const DashboardLayout = () => {
                     {!roleLoading && role === 'admin' &&
                         <>
                             <li><NavLink to='/dashboard/activeRiders' className={navLinkClass}><FaBiking /> Active Riders</NavLink></li>
+                            <li><NavLink to="/dashboard/assign-rider" className={navLinkClass}><FaUserPlus /> Assign Rider</NavLink></li>
                             <li><NavLink to='/dashboard/pendingRiders' className={navLinkClass}><FaUserClock /> Pending Riders</NavLink></li>
                             <li><NavLink to='/dashboard/makeAdmin' className={navLinkClass}> <FaUser /> Make Admin </NavLink> </li>
                         </>
