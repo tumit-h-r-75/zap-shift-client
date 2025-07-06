@@ -17,9 +17,9 @@ import useAuth from '../hooks/useAuth';
 import useUserRole from '../hooks/useUserRole';
 
 const DashboardLayout = () => {
-    const { user, signOutUser } = useAuth();
+    const { signOutUser } = useAuth();
     const { role, roleLoading } = useUserRole();
-    console.log(role,roleLoading);
+    console.log(role, roleLoading);
 
     const handleLogout = () => {
         signOutUser();
@@ -72,13 +72,13 @@ const DashboardLayout = () => {
                     <li><NavLink to='/dashboard/settings' className={navLinkClass}><FaCog /> User Settings</NavLink></li>
 
                     {/*New Added Links */}
-                   { !roleLoading&&role==='admin'&&
-                    <>
-                         <li><NavLink to='/dashboard/activeRiders' className={navLinkClass}><FaBiking /> Active Riders</NavLink></li>
-                    <li><NavLink to='/dashboard/pendingRiders' className={navLinkClass}><FaUserClock /> Pending Riders</NavLink></li>
-                    <li><NavLink to='/dashboard/makeAdmin' className={navLinkClass}> <FaUser /> Make Admin </NavLink> </li>
-                    </>
-                   }
+                    {!roleLoading && role === 'admin' &&
+                        <>
+                            <li><NavLink to='/dashboard/activeRiders' className={navLinkClass}><FaBiking /> Active Riders</NavLink></li>
+                            <li><NavLink to='/dashboard/pendingRiders' className={navLinkClass}><FaUserClock /> Pending Riders</NavLink></li>
+                            <li><NavLink to='/dashboard/makeAdmin' className={navLinkClass}> <FaUser /> Make Admin </NavLink> </li>
+                        </>
+                    }
 
                     <li>
                         <button onClick={handleLogout} className="btn btn-sm bg-red-500 text-white mt-3 w-full flex items-center gap-2 justify-center">
