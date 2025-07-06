@@ -4,22 +4,22 @@ import {
     FaHome,
     FaUser,
     FaBox,
-    FaMoneyCheckAlt,
     FaSignOutAlt,
     FaMapMarkedAlt,
     FaPlusSquare,
-    FaCreditCard,
     FaHistory,
-    FaComments,
     FaCog,
     FaBiking,
     FaUserClock
 } from 'react-icons/fa';
 import ProfirstLogo from '../components/ProfirstLogo';
 import useAuth from '../hooks/useAuth';
+import useUserRole from '../hooks/useUserRole';
 
 const DashboardLayout = () => {
     const { user, signOutUser } = useAuth();
+    const { role, roleLoading } = useUserRole();
+    console.log(role,roleLoading);
 
     const handleLogout = () => {
         signOutUser();
@@ -61,14 +61,6 @@ const DashboardLayout = () => {
                 <label htmlFor="my-drawer-3" className="drawer-overlay"></label>
                 <ul className="menu p-4 w-80 min-h-full bg-base-200 text-base-content space-y-1">
                     <ProfirstLogo />
-
-                    {/* User Info */}
-                    <div className="mt-4 mb-2 text-sm">
-                        <p><strong>Name:</strong> {user?.displayName}</p>
-                        <p><strong>Email:</strong> {user?.email}</p>
-                        <p><strong>Role:</strong> {user?.role || 'User'}</p>
-                    </div>
-
                     {/* Navigation Links */}
                     <li><NavLink to='/' className={navLinkClass}><FaHome /> Home</NavLink></li>
                     <li><NavLink to='/coverage' className={navLinkClass}><FaMapMarkedAlt /> Coverage</NavLink></li>
@@ -80,9 +72,13 @@ const DashboardLayout = () => {
                     <li><NavLink to='/dashboard/settings' className={navLinkClass}><FaCog /> User Settings</NavLink></li>
 
                     {/*New Added Links */}
-                    <li><NavLink to='/dashboard/activeRiders' className={navLinkClass}><FaBiking /> Active Riders</NavLink></li>
+                   { !roleLoading&&role==='admin'&&
+                    <>
+                         <li><NavLink to='/dashboard/activeRiders' className={navLinkClass}><FaBiking /> Active Riders</NavLink></li>
                     <li><NavLink to='/dashboard/pendingRiders' className={navLinkClass}><FaUserClock /> Pending Riders</NavLink></li>
                     <li><NavLink to='/dashboard/makeAdmin' className={navLinkClass}> <FaUser /> Make Admin </NavLink> </li>
+                    </>
+                   }
 
                     <li>
                         <button onClick={handleLogout} className="btn btn-sm bg-red-500 text-white mt-3 w-full flex items-center gap-2 justify-center">
