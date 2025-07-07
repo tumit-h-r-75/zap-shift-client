@@ -1,47 +1,47 @@
 import React from 'react';
 import useAuth from '../../hooks/useAuth';
-import { useNavigate } from 'react-router';
-
+import { useNavigate, useLocation } from 'react-router';
 import { FcGoogle } from 'react-icons/fc';
 import useAxios from '../../hooks/useAxios';
+import toast from 'react-hot-toast';
 
 const SocialLogin = () => {
-
-    const from = location.state?.from?.pathname || "/";
-
     const { googleSigneIn } = useAuth();
     const navigate = useNavigate();
-    const axiosInstance = useAxios()
+    const location = useLocation();
+    const from = location.state?.from?.pathname || '/';
 
+    const axiosInstance = useAxios();
 
+    const handleGoogleLogin = async () => {
+        try {
+            const res = await googleSigneIn();
+            const user = res.user;
 
+            // prepare user data
+            const userInfo = {
+                email: user.email,
+                role: 'user',
+                createdAt: new Date().toISOString(),
+                last_log_In: new Date().toISOString()
+            };
 
-    const handleGoogleLogin = () => {
-        googleSigneIn()
-            .then(async (res) => {
+            await axiosInstance.post('/users', userInfo);
+            toast.success('Login successful!');
 
-                console.log(res);
-                const user = res.user
-
-                // update user info inthe data base 
-                const userInfo = {
-                    email: user.email,
-                    role: "user", //defoult role
-                    createdAt: new Date().toISOString(),
-                    last_log_In: new Date().toISOString()
-                }
-                const userRes = await axiosInstance.post('/users', userInfo)
-                console.log('user update info',userRes.data);
-
-                navigate(from, { replace: true });
-            })
-            .catch((error) => {
-                console.log(error);
-            });
+            // ✅ redirect to previous page or home
+            navigate(from, { replace: true });
+        } catch (error) {
+            console.error(error);
+            toast.error('Google Sign In failed!');
+        }
     };
 
     return (
-        <button onClick={handleGoogleLogin} className="btn btn-outline w-full flex items-center justify-center gap-2">
+        <button
+            onClick={handleGoogleLogin}
+            className="btn btn-outline w-full flex items-center justify-center gap-2"
+        >
             <FcGoogle className="text-xl" /> Login with Google
         </button>
     );

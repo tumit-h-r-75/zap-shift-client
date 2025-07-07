@@ -1,130 +1,150 @@
 import React, { useState } from 'react';
 import useAxiosSecoure from '../../hooks/useAxiosSecoure';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
+import { FaCheck, FaTimes, FaEye } from 'react-icons/fa';
 import Loader from '../../components/Loader';
 import Swal from 'sweetalert2';
-import { FaBan, FaUserCheck, FaSearch } from 'react-icons/fa';
 
-const ActiveRiders = () => {
-  const axiosSecure = useAxiosSecoure();
-  const queryClient = useQueryClient();
-  const [search, setSearch] = useState('');
+const PendingRiders = () => {
+    const axiosSecure = useAxiosSecoure();
+    const [selectedRider, setSelectedRider] = useState(null);
 
-  // Load Active Riders
-  const { data: riders = [], isLoading } = useQuery({
-    queryKey: ['activeRiders'],
-    queryFn: async () => {
-      const res = await axiosSecure.get('/riders/active');
-      return res.data;
-    }
-  });
-
-  // Deactivate Mutation
-  const deactivateMutation = useMutation({
-    mutationFn: async (id) => {
-      const res = await axiosSecure.patch(`/riders/deactivate/${id}`);
-      return res.data;
-    },
-    onSuccess: () => {
-      Swal.fire('Deactivated!', 'Rider moved to pending list.', 'success');
-      queryClient.invalidateQueries(['activeRiders']);
-      queryClient.invalidateQueries(['pendingRiders']);
-    }
-  });
-
-  const handleDeactivate = (id) => {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: 'Do you want to deactivate this rider?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, deactivate!',
-      confirmButtonColor: '#f59e0b',
-    }).then(result => {
-      if (result.isConfirmed) {
-        deactivateMutation.mutate(id);
-      }
+    // Fetching pending riders
+    const {
+        data: riders = [],
+        isLoading,
+        refetch
+    } = useQuery({
+        queryKey: ['pendingRiders'],
+        queryFn: async () => {
+            const res = await axiosSecure.get('/riders/pending');
+            return res.data;
+        }
     });
-  };
 
-  // Filtered Riders by search
-  const filteredRiders = riders.filter(rider =>
-    rider.name.toLowerCase().includes(search.toLowerCase())
-  );
+    // Approve rider
+    const handleApprove = async (id) => {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you want to approve this rider application?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#16a34a',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, approve it!',
+        });
 
-  return (
-    <div className="p-4">
-      <h2 className="text-2xl font-semibold mb-4">Active Riders</h2>
+        if (result.isConfirmed) {
+            const res = await axiosSecure.patch(`/riders/approve/${id}`);
+            if (res.data.modifiedCount > 0) {
+                Swal.fire('Approved!', 'Rider has been approved.', 'success');
+                setSelectedRider(null); // ✅ Modal বন্ধ
+                refetch();
+            }
+        }
+    };
 
-      {/* Search Bar */}
-      <div className="mb-4 flex items-center max-w-md mx-auto">
-        <div className="relative w-full">
-          <input
-            type="text"
-            placeholder="Search by name..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          <FaSearch className="absolute left-3 top-3 text-gray-400" />
+    // Cancel rider
+    const handleCancel = async (id) => {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this rider deletion!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        });
+
+        if (result.isConfirmed) {
+            const res = await axiosSecure.delete(`/riders/${id}`);
+            if (res.data.deletedCount > 0) {
+                Swal.fire('Deleted!', 'Rider has been deleted.', 'success');
+                setSelectedRider(null); // ✅ Modal বন্ধ
+                refetch();
+            }
+        }
+    };
+
+    return (
+        <div className="p-4">
+            <h2 className="text-2xl font-semibold mb-4">Pending Rider Applications</h2>
+
+            {isLoading ? (
+                <Loader />
+            ) : (
+                <div className="overflow-x-auto">
+                    <table className="table w-full border">
+                        <thead>
+                            <tr className="bg-gray-100">
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Region</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {riders.length === 0 ? (
+                                <tr>
+                                    <td colSpan="6" className="text-center py-4 text-gray-500">
+                                        No pending riders found.
+                                    </td>
+                                </tr>
+                            ) : (
+                                riders.map((rider, index) => (
+                                    <tr key={rider._id}>
+                                        <td>{index + 1}</td>
+                                        <td>{rider.name}</td>
+                                        <td>{rider.email}</td>
+                                        <td>{rider.phone}</td>
+                                        <td>{rider.region}</td>
+                                        <td className="flex gap-2">
+                                            <button className="btn btn-sm btn-success" onClick={() => handleApprove(rider._id)}>
+                                                <FaCheck />
+                                            </button>
+                                            <button className="btn btn-sm btn-error" onClick={() => handleCancel(rider._id)}>
+                                                <FaTimes />
+                                            </button>
+                                            <button className="btn btn-sm btn-info" onClick={() => setSelectedRider(rider)}>
+                                                <FaEye />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+
+            {/* Rider Details Modal */}
+            {selectedRider && (
+                <dialog id="riderModal" className="modal modal-open">
+                    <div className="modal-box">
+                        <h3 className="font-bold text-lg mb-2">Rider Details</h3>
+                        <div className="space-y-1 text-sm">
+                            <p><b>Name:</b> {selectedRider.name}</p>
+                            <p><b>Email:</b> {selectedRider.email}</p>
+                            <p><b>Phone:</b> {selectedRider.phone}</p>
+                            <p><b>NID:</b> {selectedRider.nid}</p>
+                            <p><b>Bike Brand:</b> {selectedRider.bikeBrand}</p>
+                            <p><b>Bike Number:</b> {selectedRider.bikeNumber}</p>
+                            <p><b>Region:</b> {selectedRider.region}, {selectedRider.district}, {selectedRider.area}</p>
+                            <p><b>Status:</b> {selectedRider.status}</p>
+                            <p><b>Submitted:</b> {new Date(selectedRider.created_at).toLocaleString()}</p>
+                        </div>
+                        <div className="modal-action">
+                            <form method="dialog">
+                                <button className="btn" onClick={() => setSelectedRider(null)}>Close</button>
+                            </form>
+                        </div>
+                    </div>
+                </dialog>
+            )}
         </div>
-      </div>
-
-      {isLoading ? (
-        <Loader />
-      ) : (
-        <div className="overflow-x-auto rounded-xl shadow-xl border border-gray-200">
-          <table className="table w-full">
-            <thead className="bg-blue-50">
-              <tr>
-                <th>#</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Region</th>
-                <th>Bike</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredRiders.length === 0 ? (
-                <tr>
-                  <td colSpan="8" className="text-center py-4 text-gray-500">
-                    No matching rider found.
-                  </td>
-                </tr>
-              ) : (
-                filteredRiders.map((rider, index) => (
-                  <tr key={rider._id} className="hover:bg-blue-50 transition-all duration-200">
-                    <td>{index + 1}</td>
-                    <td className="font-semibold text-gray-800">{rider.name}</td>
-                    <td>{rider.email}</td>
-                    <td>{rider.phone}</td>
-                    <td>{rider.region}</td>
-                    <td>{rider.bikeBrand} ({rider.bikeNumber})</td>
-                    <td>
-                      <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
-                        <FaUserCheck className="text-green-500" /> Active
-                      </span>
-                    </td>
-                    <td>
-                      <button
-                        className="btn btn-sm btn-warning"
-                        onClick={() => handleDeactivate(rider._id)}
-                      >
-                        <FaBan className="mr-1" /> Deactivate
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  );
+    );
 };
 
-export default ActiveRiders;
+export default PendingRiders;

@@ -4,6 +4,7 @@ import Swal from "sweetalert2";
 import "react-toastify/dist/ReactToastify.css";
 import useAuth from "../../hooks/useAuth";
 import useAxiosSecoure from "../../hooks/useAxiosSecoure";
+import { useNavigate } from "react-router";
 
 const AddParcel = () => {
     const {
@@ -14,7 +15,7 @@ const AddParcel = () => {
     } = useForm();
     const { user } = useAuth();
     const axiosSecoure = useAxiosSecoure();
-
+    const navigate = useNavigate();
     const [type, setType] = useState("Document");
     const [warehouses, setWarehouses] = useState([]);
     const [senderDistrict, setSenderDistrict] = useState("");
@@ -99,6 +100,7 @@ const AddParcel = () => {
                             // TODO: redirect to pyment page
                             Swal.fire("Confirmed!", "Your parcel is saved and ready for payment.", "success");
                         }
+                        navigate('/dashboard/myParcels')
                     })
             } else {
                 Swal.fire("Editing Mode", "You can now modify the parcel info.", "info");
