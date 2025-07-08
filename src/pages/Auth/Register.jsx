@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom'; // ✅ Fixed import
+import { Link, useLocation, useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { FaUserCircle } from 'react-icons/fa';
 import useAuth from '../../hooks/useAuth';
